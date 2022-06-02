@@ -1,5 +1,6 @@
 use worker::*;
 use serde::{Serialize, Deserialize};
+//use postgres::{Client, Error, NoTls};
 
 mod utils;
 
@@ -29,12 +30,11 @@ pub async fn main(req: Request, env: Env) -> Result<Response> {
 	log_request(&req);
 
 	utils::set_panic_hook();
-	
 
 	let router = Router::new();
 
 	router
-		.get("/test/:number", |mut req, ctx| {
+		.get("/test/:number", | req, ctx| {
 			if let Some(number) = ctx.param("number") {
 				return Response::from_json(
 					&Test { data: number.to_string() }
@@ -43,7 +43,7 @@ pub async fn main(req: Request, env: Env) -> Result<Response> {
 
 			Response::error("Bad Request", 400)
 		})
-		.get("/:year/:cat", |mut req, ctx| {
+		.get("/:year/:cat", | req, ctx| {
 			if let (Some(year), Some(cat)) = (ctx.param("year"), ctx.param("cat")) {
 				return Response::from_json(
 					&MultiLevel { integer: year.to_string(), category: cat.to_string() }
@@ -52,7 +52,23 @@ pub async fn main(req: Request, env: Env) -> Result<Response> {
 
 			Response::error("Bad Request", 400)
 		})
+		.get("/dbtest", |_, _| {
+			return Response::ok("Test")
+		})
 		.run(req, env)
 		.await
 }
+/*
+pub fn db_handler(&str: test) -> String {
+	let mut client = Client::connect(
+		"postgresql://oscar:Acad3my 1992 Aw4rds@167.71.66.195:5432/testdb",
+		NoTls,
+	)?;
 
+	for row in client.query("SELECT movie_title FROM best_picture")? {
+		let movie_title: &str = row.get(0);
+	}
+
+	return movie_title.to_string()
+}
+*/
